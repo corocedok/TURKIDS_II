@@ -16,7 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.turcoespanolkids.navigation.Screen
-import com.example.turcoespanolkids.ui.screens.HomeScreen
+import com.example.turcoespanolkids.ui.screens.HomeScreenAdaptativo
 import com.example.turcoespanolkids.ui.screens.LeccionScreen
 import com.example.turcoespanolkids.ui.screens.ResumenScreen
 import com.example.turcoespanolkids.ui.theme.TurcoEspanolKidsTheme
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                         exitTransition = { fadeOut(tween(200)) },
                         popEnterTransition = { fadeIn(tween(200)) }
                     ) {
-                        HomeScreen(navController = navController)
+                        HomeScreenAdaptativo(navController = navController)
                     }
 
                     composable(

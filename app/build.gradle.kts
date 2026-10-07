@@ -52,4 +52,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.navigation:navigation-compose:2.7.7")
-}
+    implementation("androidx.compose.material3:material3-window-size-class:1.3.1")}
