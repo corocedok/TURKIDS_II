@@ -3,6 +3,8 @@ package com.example.turcoespanolkids.navigation
 sealed class Screen(val route: String) {
     data object Home : Screen(route = "home")
     data object AcercaDe : Screen(route = "acerca_de")
+    data object Registro : Screen(route = "registro")
+    data object ResumenRegistro : Screen(route = "resumen_registro")
 
     data class Leccion(val unidadId: String) : Screen(route = "leccion/$unidadId") {
         companion object {
