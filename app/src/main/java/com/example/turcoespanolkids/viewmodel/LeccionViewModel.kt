@@ -12,7 +12,6 @@ class LeccionViewModel : ViewModel() {
     private val _estado = MutableStateFlow(LeccionUiState())
     val estado: StateFlow<LeccionUiState> = _estado
 
-    /** Carga las preguntas de la unidad seleccionada. */
     fun cargarUnidad(unidadId: String) {
         val unidad = BancoDeContenido.unidades.firstOrNull { it.id == unidadId } ?: return
         _estado.update {
@@ -23,23 +22,33 @@ class LeccionViewModel : ViewModel() {
         }
     }
 
-    /** Registra la opción elegida y evalúa si es correcta. */
+    /** Criterio del especialista: el error no castiga. El primer error da una segunda oportunidad. */
     fun seleccionarOpcion(opcion: String) {
         val actual = _estado.value
-        if (actual.respondido) return // evita doble respuesta
+        if (actual.respondido || opcion in actual.descartadas) return
 
-        val esCorrecta = opcion == actual.preguntaActual?.respuestaCorrecta
+        val correcta = opcion == actual.preguntaActual?.respuestaCorrecta
         _estado.update {
-            it.copy(
-                opcionSeleccionada = opcion,
-                respondido = true,
-                esCorrecta = esCorrecta,
-                aciertos = if (esCorrecta) it.aciertos + 1 else it.aciertos
-            )
+            when {
+                correcta -> it.copy(
+                    opcionSeleccionada = opcion,
+                    respondido = true,
+                    esCorrecta = true,
+                    aciertos = it.aciertos + 1
+                )
+                it.intentosFallidos == 0 -> it.copy(
+                    descartadas = it.descartadas + opcion,
+                    intentosFallidos = 1
+                )
+                else -> it.copy(
+                    opcionSeleccionada = opcion,
+                    respondido = true,
+                    esCorrecta = false
+                )
+            }
         }
     }
 
-    /** Avanza a la siguiente pregunta o marca la lección como finalizada. */
     fun siguientePregunta() {
         val actual = _estado.value
         val siguienteIndice = actual.indiceActual + 1
@@ -51,6 +60,8 @@ class LeccionViewModel : ViewModel() {
                 it.copy(
                     indiceActual = siguienteIndice,
                     opcionSeleccionada = null,
+                    descartadas = emptySet(),
+                    intentosFallidos = 0,
                     respondido = false,
                     esCorrecta = false
                 )
