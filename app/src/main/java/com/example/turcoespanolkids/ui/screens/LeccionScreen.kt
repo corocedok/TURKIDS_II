@@ -2,6 +2,7 @@
 
 package com.example.turcoespanolkids.ui.screens
 
+import com.example.turcoespanolkids.viewmodel.MainViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -22,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.turcoespanolkids.model.LeccionUiState
 import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.viewmodel.LeccionViewModel
@@ -31,7 +31,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun LeccionScreen(
     unidadId: String,
-    navController: NavController,
+    mainViewModel: MainViewModel,
     viewModel: LeccionViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
@@ -40,9 +40,10 @@ fun LeccionScreen(
 
     LaunchedEffect(estado.finalizado) {
         if (estado.finalizado) {
-            navController.navigate(
-                Screen.Resumen(estado.aciertos, estado.totalPreguntas).route
-            ) { popUpTo(Screen.Home.route) }
+            mainViewModel.navigateTo(
+                screen = Screen.Resumen(estado.aciertos, estado.totalPreguntas),
+                popUpToRoute = Screen.Home
+            )
         }
     }
 

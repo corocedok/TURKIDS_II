@@ -2,6 +2,7 @@
 
 package com.example.turcoespanolkids.ui.screens
 
+import com.example.turcoespanolkids.viewmodel.MainViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -22,15 +23,13 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.turcoespanolkids.navigation.Screen
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.random.Random
 
 @Composable
-fun ResumenScreen(aciertos: Int, total: Int, navController: NavController) {
-    val estrellas = when {
+fun ResumenScreen(aciertos: Int, total: Int, mainViewModel: MainViewModel) {    val estrellas = when {
         total == 0 -> 0
         aciertos == total -> 3
         aciertos >= total / 2 -> 2
@@ -86,9 +85,11 @@ fun ResumenScreen(aciertos: Int, total: Int, navController: NavController) {
                 ) {
                     Button(
                         onClick = {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
-                            }
+                            mainViewModel.navigateTo(
+                                screen = Screen.Home,
+                                popUpToRoute = Screen.Home,
+                                inclusive = true
+                            )
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(20.dp)

@@ -10,16 +10,22 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.turcoespanolkids.navigation.NavigationEvent
 import com.example.turcoespanolkids.navigation.Screen
+import com.example.turcoespanolkids.ui.screens.AcercaDeScreen
 import com.example.turcoespanolkids.ui.screens.HomeScreenAdaptativo
 import com.example.turcoespanolkids.ui.screens.LeccionScreen
 import com.example.turcoespanolkids.ui.screens.ResumenScreen
 import com.example.turcoespanolkids.ui.theme.TurcoEspanolKidsTheme
+import com.example.turcoespanolkids.viewmodel.MainViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +34,24 @@ class MainActivity : ComponentActivity() {
         setContent {
             TurcoEspanolKidsTheme {
                 val navController = rememberNavController()
+                val mainViewModel: MainViewModel = viewModel()
+
+                LaunchedEffect(Unit) {
+                    mainViewModel.navigationEvents.collectLatest { event ->
+                        when (event) {
+                            is NavigationEvent.NavigateTo -> {
+                                navController.navigate(event.route.route) {
+                                    event.popUpToRoute?.let {
+                                        popUpTo(it.route) { inclusive = event.inclusive }
+                                    }
+                                    launchSingleTop = event.singleTop
+                                }
+                            }
+                            is NavigationEvent.PopBackStack -> navController.popBackStack()
+                            is NavigationEvent.NavigateUp -> navController.navigateUp()
+                        }
+                    }
+                }
 
                 NavHost(navController = navController, startDestination = Screen.Home.route) {
                     composable(
@@ -35,7 +59,15 @@ class MainActivity : ComponentActivity() {
                         exitTransition = { fadeOut(tween(200)) },
                         popEnterTransition = { fadeIn(tween(200)) }
                     ) {
-                        HomeScreenAdaptativo(navController = navController)
+                        HomeScreenAdaptativo(mainViewModel = mainViewModel)
+                    }
+
+                    composable(
+                        route = Screen.AcercaDe.route,
+                        enterTransition = { fadeIn(tween(250)) },
+                        exitTransition = { fadeOut(tween(200)) }
+                    ) {
+                        AcercaDeScreen(mainViewModel = mainViewModel)
                     }
 
                     composable(
@@ -54,7 +86,7 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val unidadId = backStackEntry.arguments
                             ?.getString(Screen.Leccion.ARG_UNIDAD_ID) ?: ""
-                        LeccionScreen(unidadId = unidadId, navController = navController)
+                        LeccionScreen(unidadId = unidadId, mainViewModel = mainViewModel)
                     }
 
                     composable(
@@ -72,7 +104,7 @@ class MainActivity : ComponentActivity() {
                             ?.getInt(Screen.Resumen.ARG_ACIERTOS) ?: 0
                         val total = backStackEntry.arguments
                             ?.getInt(Screen.Resumen.ARG_TOTAL) ?: 0
-                        ResumenScreen(aciertos = aciertos, total = total, navController = navController)
+                        ResumenScreen(aciertos = aciertos, total = total, mainViewModel = mainViewModel)
                     }
                 }
             }
