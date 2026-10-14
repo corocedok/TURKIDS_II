@@ -11,10 +11,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,65 +26,198 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.example.turcoespanolkids.R
 import com.example.turcoespanolkids.model.BancoDeContenido
+import com.example.turcoespanolkids.model.PerfilesPrueba
+import com.example.turcoespanolkids.model.ProgresoUiState
 import com.example.turcoespanolkids.model.Unidad
 import com.example.turcoespanolkids.navigation.Screen
+import com.example.turcoespanolkids.ui.utils.obtenerWindowSizeClass
+import com.example.turcoespanolkids.viewmodel.MainViewModel
+import com.example.turcoespanolkids.viewmodel.ProgresoViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Türkçe - Español", fontWeight = FontWeight.Bold) })
+fun HomeScreenAdaptativo(
+    mainViewModel: MainViewModel,
+    progresoViewModel: ProgresoViewModel
+) {
+    val progreso by progresoViewModel.estado.collectAsState()
+    val windowSizeClass = obtenerWindowSizeClass()
+    val alElegirPerfil: (String) -> Unit = { progresoViewModel.seleccionarPerfil(it) }
+    val alReiniciar: () -> Unit = { progresoViewModel.reiniciar() }
+
+    when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Compact ->
+            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        WindowWidthSizeClass.Medium ->
+            HomeScreenMediana(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        WindowWidthSizeClass.Expanded ->
+            HomeScreenExpandida(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        else ->
+            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+    }
+}
+
+@Composable
+fun HomeScreenCompacta(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 1, progreso, onPerfilClick, onReiniciar)
+
+@Composable
+fun HomeScreenMediana(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 2, progreso, onPerfilClick, onReiniciar)
+
+@Composable
+fun HomeScreenExpandida(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 3, progreso, onPerfilClick, onReiniciar)
+
+@Composable
+private fun HomeScreenBase(
+    mainViewModel: MainViewModel,
+    columnas: Int,
+    progreso: ProgresoUiState,
+    onPerfilClick: (String) -> Unit,
+    onReiniciar: () -> Unit
+) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Menú",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                HorizontalDivider()
+                BancoDeContenido.unidades.forEach { unidad ->
+                    NavigationDrawerItem(
+                        label = { Text("${unidad.emoji}  ${unidad.titulo}") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            mainViewModel.navigateTo(Screen.Leccion(unidad.id))
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                }
+                NavigationDrawerItem(
+                    label = { Text("ℹ️  Acerca de") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        mainViewModel.navigateTo(Screen.AcercaDe)
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("📝  Registro de prueba") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        mainViewModel.navigateTo(Screen.Registro)
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("🔄  Reiniciar progreso de este perfil") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onReiniciar()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
         }
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Türkçe - Español", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                    }
+                )
+            }
+        ) { innerPadding ->
+            Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
                 var logoVisible by remember { mutableStateOf(false) }
                 LaunchedEffect(Unit) { logoVisible = true }
                 AnimatedVisibility(
                     visible = logoVisible,
                     enter = fadeIn(tween(600)) + slideInVertically(
-                        initialOffsetY = { -40 },
-                        animationSpec = tween(600)
+                        initialOffsetY = { -40 }, animationSpec = tween(600)
                     )
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo de la app",
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier.fillMaxWidth().height(160.dp),
                         contentScale = ContentScale.Fit
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(text = "Perfil ficticio de prueba:", fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PerfilesPrueba.lista.forEach { perfil ->
+                        FilterChip(
+                            selected = perfil.id == progreso.perfilActivoId,
+                            onClick = { onPerfilClick(perfil.id) },
+                            label = { Text(perfil.nombre, fontSize = 18.sp) }
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Elige una unidad para practicar",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            itemsIndexed(BancoDeContenido.unidades) { index, unidad ->
-                TarjetaUnidad(
-                    unidad = unidad,
-                    index = index,
-                    onClick = { navController.navigate(Screen.Leccion(unidad.id).route) }
-                )
+
+                Text(text = "Elige una unidad para practicar", fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columnas),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    itemsIndexed(BancoDeContenido.unidades) { index, unidad ->
+                        TarjetaUnidad(
+                            unidad = unidad,
+                            index = index,
+                            estrellas = progreso.estrellas[unidad.id] ?: 0,
+                            onClick = { mainViewModel.navigateTo(Screen.Leccion(unidad.id)) }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TarjetaUnidad(unidad: Unidad, index: Int, onClick: () -> Unit) {
+private fun TarjetaUnidad(unidad: Unidad, index: Int, estrellas: Int, onClick: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(unidad.id) {
         delay(150L + index * 120L)
@@ -89,10 +226,7 @@ private fun TarjetaUnidad(unidad: Unidad, index: Int, onClick: () -> Unit) {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(400)) + slideInVertically(
-            initialOffsetY = { 60 },
-            animationSpec = tween(400)
-        )
+        enter = fadeIn(tween(400)) + slideInVertically(initialOffsetY = { 60 }, animationSpec = tween(400))
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         val isPressed by interactionSource.collectIsPressedAsState()
@@ -120,9 +254,32 @@ private fun TarjetaUnidad(unidad: Unidad, index: Int, onClick: () -> Unit) {
                     text = unidad.titulo,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "⭐".repeat(estrellas) + "☆".repeat(3 - estrellas),
+                    fontSize = 18.sp
                 )
             }
         }
     }
+}
+
+@Preview(name = "Compact", widthDp = 360, heightDp = 800)
+@Composable
+private fun PreviewCompacta() {
+    HomeScreenCompacta(mainViewModel = MainViewModel())
+}
+
+@Preview(name = "Medium", widthDp = 700, heightDp = 900)
+@Composable
+private fun PreviewMediana() {
+    HomeScreenMediana(mainViewModel = MainViewModel())
+}
+
+@Preview(name = "Expanded", widthDp = 1200, heightDp = 900)
+@Composable
+private fun PreviewExpandida() {
+    HomeScreenExpandida(mainViewModel = MainViewModel())
 }

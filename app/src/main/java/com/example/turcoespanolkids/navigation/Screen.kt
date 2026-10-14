@@ -1,11 +1,10 @@
 package com.example.turcoespanolkids.navigation
 
-/**
- * Rutas de navegación de la app, siguiendo el patrón sealed class
- * visto en Guía 10 para mayor seguridad de tipos.
- */
 sealed class Screen(val route: String) {
     data object Home : Screen(route = "home")
+    data object AcercaDe : Screen(route = "acerca_de")
+    data object Registro : Screen(route = "registro")
+    data object ResumenRegistro : Screen(route = "resumen_registro")
 
     data class Leccion(val unidadId: String) : Screen(route = "leccion/$unidadId") {
         companion object {

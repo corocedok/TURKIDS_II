@@ -1,15 +1,13 @@
 package com.example.turcoespanolkids.model
 
-/**
- * Estado completo de una lección en curso, observado reactivamente
- * desde LeccionScreen mediante StateFlow + collectAsState().
- */
 data class LeccionUiState(
     val tituloUnidad: String = "",
     val preguntas: List<Pregunta> = emptyList(),
     val indiceActual: Int = 0,
     val aciertos: Int = 0,
     val opcionSeleccionada: String? = null,
+    val descartadas: Set<String> = emptySet(),
+    val intentosFallidos: Int = 0,
     val respondido: Boolean = false,
     val esCorrecta: Boolean = false,
     val finalizado: Boolean = false
