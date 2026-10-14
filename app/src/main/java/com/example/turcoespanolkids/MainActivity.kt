@@ -22,9 +22,13 @@ import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.ui.screens.AcercaDeScreen
 import com.example.turcoespanolkids.ui.screens.HomeScreenAdaptativo
 import com.example.turcoespanolkids.ui.screens.LeccionScreen
+import com.example.turcoespanolkids.ui.screens.RegistroScreen
+import com.example.turcoespanolkids.ui.screens.ResumenRegistroScreen
 import com.example.turcoespanolkids.ui.screens.ResumenScreen
 import com.example.turcoespanolkids.ui.theme.TurcoEspanolKidsTheme
 import com.example.turcoespanolkids.viewmodel.MainViewModel
+import com.example.turcoespanolkids.viewmodel.ProgresoViewModel
+import com.example.turcoespanolkids.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -35,6 +39,8 @@ class MainActivity : ComponentActivity() {
             TurcoEspanolKidsTheme {
                 val navController = rememberNavController()
                 val mainViewModel: MainViewModel = viewModel()
+                val usuarioViewModel: UsuarioViewModel = viewModel()
+                val progresoViewModel: ProgresoViewModel = viewModel()
 
                 LaunchedEffect(Unit) {
                     mainViewModel.navigationEvents.collectLatest { event ->
@@ -59,7 +65,10 @@ class MainActivity : ComponentActivity() {
                         exitTransition = { fadeOut(tween(200)) },
                         popEnterTransition = { fadeIn(tween(200)) }
                     ) {
-                        HomeScreenAdaptativo(mainViewModel = mainViewModel)
+                        HomeScreenAdaptativo(
+                            mainViewModel = mainViewModel,
+                            progresoViewModel = progresoViewModel
+                        )
                     }
 
                     composable(
@@ -68,6 +77,20 @@ class MainActivity : ComponentActivity() {
                         exitTransition = { fadeOut(tween(200)) }
                     ) {
                         AcercaDeScreen(mainViewModel = mainViewModel)
+                    }
+
+                    composable(Screen.Registro.route) {
+                        RegistroScreen(
+                            mainViewModel = mainViewModel,
+                            usuarioViewModel = usuarioViewModel
+                        )
+                    }
+
+                    composable(Screen.ResumenRegistro.route) {
+                        ResumenRegistroScreen(
+                            mainViewModel = mainViewModel,
+                            usuarioViewModel = usuarioViewModel
+                        )
                     }
 
                     composable(
@@ -86,7 +109,11 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val unidadId = backStackEntry.arguments
                             ?.getString(Screen.Leccion.ARG_UNIDAD_ID) ?: ""
-                        LeccionScreen(unidadId = unidadId, mainViewModel = mainViewModel)
+                        LeccionScreen(
+                            unidadId = unidadId,
+                            mainViewModel = mainViewModel,
+                            progresoViewModel = progresoViewModel
+                        )
                     }
 
                     composable(

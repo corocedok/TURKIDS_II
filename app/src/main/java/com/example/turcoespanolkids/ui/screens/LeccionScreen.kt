@@ -31,6 +31,7 @@ import com.example.turcoespanolkids.model.Pregunta
 import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.viewmodel.LeccionViewModel
 import com.example.turcoespanolkids.viewmodel.MainViewModel
+import com.example.turcoespanolkids.viewmodel.ProgresoViewModel
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -95,6 +96,7 @@ private fun textoAudio(p: Pregunta): Pair<String, Locale> =
 fun LeccionScreen(
     unidadId: String,
     mainViewModel: MainViewModel,
+    progresoViewModel: ProgresoViewModel,
     viewModel: LeccionViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
@@ -104,6 +106,8 @@ fun LeccionScreen(
 
     LaunchedEffect(estado.finalizado) {
         if (estado.finalizado) {
+            // Guarda las estrellas en el perfil ficticio activo (solo en el dispositivo)
+            progresoViewModel.registrarResultado(unidadId, estado.aciertos, estado.totalPreguntas)
             mainViewModel.navigateTo(
                 screen = Screen.Resumen(estado.aciertos, estado.totalPreguntas),
                 popUpToRoute = Screen.Home

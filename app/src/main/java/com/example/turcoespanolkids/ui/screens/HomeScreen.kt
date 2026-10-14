@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -32,35 +31,70 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.turcoespanolkids.R
 import com.example.turcoespanolkids.model.BancoDeContenido
+import com.example.turcoespanolkids.model.PerfilesPrueba
+import com.example.turcoespanolkids.model.ProgresoUiState
 import com.example.turcoespanolkids.model.Unidad
 import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.ui.utils.obtenerWindowSizeClass
 import com.example.turcoespanolkids.viewmodel.MainViewModel
+import com.example.turcoespanolkids.viewmodel.ProgresoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreenAdaptativo(mainViewModel: MainViewModel) {
+fun HomeScreenAdaptativo(
+    mainViewModel: MainViewModel,
+    progresoViewModel: ProgresoViewModel
+) {
+    val progreso by progresoViewModel.estado.collectAsState()
     val windowSizeClass = obtenerWindowSizeClass()
+    val alElegirPerfil: (String) -> Unit = { progresoViewModel.seleccionarPerfil(it) }
+    val alReiniciar: () -> Unit = { progresoViewModel.reiniciar() }
+
     when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> HomeScreenCompacta(mainViewModel)
-        WindowWidthSizeClass.Medium -> HomeScreenMediana(mainViewModel)
-        WindowWidthSizeClass.Expanded -> HomeScreenExpandida(mainViewModel)
-        else -> HomeScreenCompacta(mainViewModel)
+        WindowWidthSizeClass.Compact ->
+            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        WindowWidthSizeClass.Medium ->
+            HomeScreenMediana(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        WindowWidthSizeClass.Expanded ->
+            HomeScreenExpandida(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+        else ->
+            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
     }
 }
 
 @Composable
-fun HomeScreenCompacta(mainViewModel: MainViewModel) = HomeScreenBase(mainViewModel, columnas = 1)
+fun HomeScreenCompacta(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 1, progreso, onPerfilClick, onReiniciar)
 
 @Composable
-fun HomeScreenMediana(mainViewModel: MainViewModel) = HomeScreenBase(mainViewModel, columnas = 2)
+fun HomeScreenMediana(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 2, progreso, onPerfilClick, onReiniciar)
 
 @Composable
-fun HomeScreenExpandida(mainViewModel: MainViewModel) = HomeScreenBase(mainViewModel, columnas = 3)
+fun HomeScreenExpandida(
+    mainViewModel: MainViewModel,
+    progreso: ProgresoUiState = ProgresoUiState(),
+    onPerfilClick: (String) -> Unit = {},
+    onReiniciar: () -> Unit = {}
+) = HomeScreenBase(mainViewModel, 3, progreso, onPerfilClick, onReiniciar)
 
 @Composable
-private fun HomeScreenBase(mainViewModel: MainViewModel, columnas: Int) {
+private fun HomeScreenBase(
+    mainViewModel: MainViewModel,
+    columnas: Int,
+    progreso: ProgresoUiState,
+    onPerfilClick: (String) -> Unit,
+    onReiniciar: () -> Unit
+) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -95,6 +129,24 @@ private fun HomeScreenBase(mainViewModel: MainViewModel, columnas: Int) {
                     },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
+                NavigationDrawerItem(
+                    label = { Text("📝  Registro de prueba") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        mainViewModel.navigateTo(Screen.Registro)
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("🔄  Reiniciar progreso de este perfil") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onReiniciar()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
             }
         }
     ) {
@@ -126,11 +178,22 @@ private fun HomeScreenBase(mainViewModel: MainViewModel, columnas: Int) {
                         contentScale = ContentScale.Fit
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(text = "Perfil ficticio de prueba:", fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PerfilesPrueba.lista.forEach { perfil ->
+                        FilterChip(
+                            selected = perfil.id == progreso.perfilActivoId,
+                            onClick = { onPerfilClick(perfil.id) },
+                            label = { Text(perfil.nombre, fontSize = 18.sp) }
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Elige una unidad para practicar",
-                    style = MaterialTheme.typography.titleMedium
-                )
+
+                Text(text = "Elige una unidad para practicar", fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LazyVerticalGrid(
@@ -143,6 +206,7 @@ private fun HomeScreenBase(mainViewModel: MainViewModel, columnas: Int) {
                         TarjetaUnidad(
                             unidad = unidad,
                             index = index,
+                            estrellas = progreso.estrellas[unidad.id] ?: 0,
                             onClick = { mainViewModel.navigateTo(Screen.Leccion(unidad.id)) }
                         )
                     }
@@ -153,7 +217,7 @@ private fun HomeScreenBase(mainViewModel: MainViewModel, columnas: Int) {
 }
 
 @Composable
-private fun TarjetaUnidad(unidad: Unidad, index: Int, onClick: () -> Unit) {
+private fun TarjetaUnidad(unidad: Unidad, index: Int, estrellas: Int, onClick: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(unidad.id) {
         delay(150L + index * 120L)
@@ -190,7 +254,12 @@ private fun TarjetaUnidad(unidad: Unidad, index: Int, onClick: () -> Unit) {
                     text = unidad.titulo,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "⭐".repeat(estrellas) + "☆".repeat(3 - estrellas),
+                    fontSize = 18.sp
                 )
             }
         }
