@@ -40,11 +40,6 @@ private val NaranjaSuave = Color(0xFFFFCC80)
 private val NaranjaTexto = Color(0xFFE65100)
 private val VerdeTexto = Color(0xFF2E7D32)
 
-/**
- * Devuelve una función que reproduce un texto con la voz del dispositivo.
- * El tercer parámetro indica si se deben mostrar avisos cuando falla
- * (true al tocar el botón, false en el audio automático).
- */
 @Composable
 private fun rememberHablar(): (String, Locale, Boolean) -> Unit {
     val context = LocalContext.current
@@ -87,7 +82,7 @@ private fun rememberHablar(): (String, Locale, Boolean) -> Unit {
     }
 }
 
-/** La palabra que se muestra en pantalla es la que se pronuncia. */
+// La palabra que se muestra en pantalla es la que se pronuncia
 private fun textoAudio(p: Pregunta): Pair<String, Locale> =
     if (p.mostrarTurco) p.palabra.tr to Locale.forLanguageTag("tr-TR")
     else p.palabra.es to Locale.forLanguageTag("es-US")
@@ -106,7 +101,6 @@ fun LeccionScreen(
 
     LaunchedEffect(estado.finalizado) {
         if (estado.finalizado) {
-            // Guarda las estrellas en el perfil ficticio activo (solo en el dispositivo)
             progresoViewModel.registrarResultado(unidadId, estado.aciertos, estado.totalPreguntas)
             mainViewModel.navigateTo(
                 screen = Screen.Resumen(estado.aciertos, estado.totalPreguntas),
@@ -115,7 +109,6 @@ fun LeccionScreen(
         }
     }
 
-    // Reproducción automática al aparecer cada pregunta (sin avisos si falla)
     LaunchedEffect(estado.indiceActual, estado.preguntas) {
         val p = estado.preguntaActual ?: return@LaunchedEffect
         delay(800)

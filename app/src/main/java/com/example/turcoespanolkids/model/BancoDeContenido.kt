@@ -1,11 +1,6 @@
 package com.example.turcoespanolkids.model
 
-/**
- * Contenido bilingüe de prueba, público/creado para el caso académico.
- * NO contiene datos personales ni información real de menores.
- * Las unidades y su orden deben ajustarse según los criterios pedagógicos
- * levantados en la entrevista con el especialista (ver 2.2 y 6 del caso).
- */
+// Contenido ficticio de prueba: las unidades y su orden se ajustan según el especialista
 object BancoDeContenido {
 
     val unidades = listOf(
@@ -44,11 +39,7 @@ object BancoDeContenido {
         )
     )
 
-    /**
-     * Genera preguntas de opción múltiple a partir de las palabras de una unidad.
-     * Alterna el sentido de la pregunta (turco->español / español->turco)
-     * y arma distractores tomados de la misma unidad.
-     */
+    // Alterna el sentido (turco->español / español->turco); los distractores salen de la misma unidad
     fun generarPreguntas(unidad: Unidad): List<Pregunta> {
         return unidad.palabras.mapIndexed { index, palabra ->
             val mostrarTurco = index % 2 == 0

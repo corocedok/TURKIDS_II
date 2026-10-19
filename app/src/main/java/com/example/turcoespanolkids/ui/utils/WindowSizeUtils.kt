@@ -6,7 +6,6 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 
-/** Calcula el tamaño de pantalla actual (Compact, Medium o Expanded). */
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun obtenerWindowSizeClass(): WindowSizeClass {

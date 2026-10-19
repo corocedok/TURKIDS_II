@@ -1,6 +1,5 @@
 package com.example.turcoespanolkids.model
 
-/** Errores de validación por campo (null = sin error). */
 data class UsuarioErrores(
     val nombre: String? = null,
     val correo: String? = null,
@@ -9,7 +8,6 @@ data class UsuarioErrores(
     val terminos: String? = null
 )
 
-/** Estado completo del formulario de registro. */
 data class UsuarioUiState(
     val nombre: String = "",
     val correo: String = "",

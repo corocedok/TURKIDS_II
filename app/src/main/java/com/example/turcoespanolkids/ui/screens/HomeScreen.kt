@@ -47,45 +47,20 @@ fun HomeScreenAdaptativo(
     progresoViewModel: ProgresoViewModel
 ) {
     val progreso by progresoViewModel.estado.collectAsState()
-    val windowSizeClass = obtenerWindowSizeClass()
-    val alElegirPerfil: (String) -> Unit = { progresoViewModel.seleccionarPerfil(it) }
-    val alReiniciar: () -> Unit = { progresoViewModel.reiniciar() }
-
-    when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact ->
-            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
-        WindowWidthSizeClass.Medium ->
-            HomeScreenMediana(mainViewModel, progreso, alElegirPerfil, alReiniciar)
-        WindowWidthSizeClass.Expanded ->
-            HomeScreenExpandida(mainViewModel, progreso, alElegirPerfil, alReiniciar)
-        else ->
-            HomeScreenCompacta(mainViewModel, progreso, alElegirPerfil, alReiniciar)
+    val columnas = when (obtenerWindowSizeClass().widthSizeClass) {
+        WindowWidthSizeClass.Medium -> 2
+        WindowWidthSizeClass.Expanded -> 3
+        else -> 1
     }
+
+    HomeScreenBase(
+        mainViewModel = mainViewModel,
+        columnas = columnas,
+        progreso = progreso,
+        onPerfilClick = { progresoViewModel.seleccionarPerfil(it) },
+        onReiniciar = { progresoViewModel.reiniciar() }
+    )
 }
-
-@Composable
-fun HomeScreenCompacta(
-    mainViewModel: MainViewModel,
-    progreso: ProgresoUiState = ProgresoUiState(),
-    onPerfilClick: (String) -> Unit = {},
-    onReiniciar: () -> Unit = {}
-) = HomeScreenBase(mainViewModel, 1, progreso, onPerfilClick, onReiniciar)
-
-@Composable
-fun HomeScreenMediana(
-    mainViewModel: MainViewModel,
-    progreso: ProgresoUiState = ProgresoUiState(),
-    onPerfilClick: (String) -> Unit = {},
-    onReiniciar: () -> Unit = {}
-) = HomeScreenBase(mainViewModel, 2, progreso, onPerfilClick, onReiniciar)
-
-@Composable
-fun HomeScreenExpandida(
-    mainViewModel: MainViewModel,
-    progreso: ProgresoUiState = ProgresoUiState(),
-    onPerfilClick: (String) -> Unit = {},
-    onReiniciar: () -> Unit = {}
-) = HomeScreenBase(mainViewModel, 3, progreso, onPerfilClick, onReiniciar)
 
 @Composable
 private fun HomeScreenBase(
@@ -269,17 +244,17 @@ private fun TarjetaUnidad(unidad: Unidad, index: Int, estrellas: Int, onClick: (
 @Preview(name = "Compact", widthDp = 360, heightDp = 800)
 @Composable
 private fun PreviewCompacta() {
-    HomeScreenCompacta(mainViewModel = MainViewModel())
+    HomeScreenBase(MainViewModel(), 1, ProgresoUiState(), {}, {})
 }
 
 @Preview(name = "Medium", widthDp = 700, heightDp = 900)
 @Composable
 private fun PreviewMediana() {
-    HomeScreenMediana(mainViewModel = MainViewModel())
+    HomeScreenBase(MainViewModel(), 2, ProgresoUiState(), {}, {})
 }
 
 @Preview(name = "Expanded", widthDp = 1200, heightDp = 900)
 @Composable
 private fun PreviewExpandida() {
-    HomeScreenExpandida(mainViewModel = MainViewModel())
+    HomeScreenBase(MainViewModel(), 3, ProgresoUiState(), {}, {})
 }

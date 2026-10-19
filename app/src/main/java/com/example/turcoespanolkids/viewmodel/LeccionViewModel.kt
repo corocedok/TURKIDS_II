@@ -22,7 +22,7 @@ class LeccionViewModel : ViewModel() {
         }
     }
 
-    /** Criterio del especialista: el error no castiga. El primer error da una segunda oportunidad. */
+    // El error no castiga: el primer fallo da una segunda oportunidad (criterio del especialista)
     fun seleccionarOpcion(opcion: String) {
         val actual = _estado.value
         if (actual.respondido || opcion in actual.descartadas) return

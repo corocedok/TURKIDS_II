@@ -1,18 +1,11 @@
 package com.example.turcoespanolkids.model
 
-/**
- * Representa una palabra o frase bilingüe de ejemplo.
- * Contenido 100% ficticio/público, creado para el caso académico DSY1105.
- */
 data class Palabra(
-    val es: String,   // Palabra en español
-    val tr: String,   // Palabra en turco
-    val emoji: String // Recurso visual simple (evita necesidad de imágenes reales)
+    val es: String,
+    val tr: String,
+    val emoji: String
 )
 
-/**
- * Representa una unidad temática del módulo (ej. "Saludos", "Animales").
- */
 data class Unidad(
     val id: String,
     val titulo: String,
@@ -20,10 +13,7 @@ data class Unidad(
     val palabras: List<Palabra>
 )
 
-/**
- * Representa una pregunta de opción múltiple generada a partir de una Palabra.
- * @param mostrarTurco si es true, se pregunta "¿cómo se dice en español?" (turco -> español)
- */
+// mostrarTurco = true: se muestra la palabra en turco y se responde en español
 data class Pregunta(
     val palabra: Palabra,
     val opciones: List<String>,
