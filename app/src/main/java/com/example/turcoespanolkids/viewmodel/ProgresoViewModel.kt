@@ -3,11 +3,13 @@ package com.example.turcoespanolkids.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.turcoespanolkids.model.BancoDeContenido
+import com.example.turcoespanolkids.model.IdiomaPractica
 import com.example.turcoespanolkids.model.ProgresoUiState
 import com.example.turcoespanolkids.model.calcularEstrellas
 import com.example.turcoespanolkids.repository.ProgresoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 class ProgresoViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,12 +22,21 @@ class ProgresoViewModel(application: Application) : AndroidViewModel(application
         val estrellas = BancoDeContenido.unidades.associate { unidad ->
             unidad.id to repositorio.estrellas(perfilId, unidad.id)
         }
-        return ProgresoUiState(perfilActivoId = perfilId, estrellas = estrellas)
+        return ProgresoUiState(
+            perfilActivoId = perfilId,
+            idioma = repositorio.idiomaPractica(),
+            estrellas = estrellas
+        )
     }
 
     fun seleccionarPerfil(perfilId: String) {
         repositorio.guardarPerfilActivo(perfilId)
         _estado.value = cargar(perfilId)
+    }
+
+    fun seleccionarIdioma(idioma: IdiomaPractica) {
+        repositorio.guardarIdiomaPractica(idioma)
+        _estado.update { it.copy(idioma = idioma) }
     }
 
     fun registrarResultado(unidadId: String, aciertos: Int, total: Int) {

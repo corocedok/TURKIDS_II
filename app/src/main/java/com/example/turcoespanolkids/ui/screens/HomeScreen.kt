@@ -168,6 +168,26 @@ private fun HomeScreenBase(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Practicando: ${progreso.idioma.etiqueta}",
+                        fontSize = 18.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = {
+                            mainViewModel.navigateTo(
+                                screen = Screen.Practica,
+                                popUpToRoute = Screen.Home,
+                                inclusive = true
+                            )
+                        }
+                    ) {
+                        Text("Cambiar", fontSize = 16.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Text(text = "Elige una unidad para practicar", fontSize = 18.sp)
                 Spacer(modifier = Modifier.height(12.dp))
 

@@ -1,9 +1,13 @@
 package com.example.turcoespanolkids
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -11,6 +15,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -22,14 +28,21 @@ import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.ui.screens.AcercaDeScreen
 import com.example.turcoespanolkids.ui.screens.HomeScreenAdaptativo
 import com.example.turcoespanolkids.ui.screens.LeccionScreen
+import com.example.turcoespanolkids.ui.screens.PracticaScreen
 import com.example.turcoespanolkids.ui.screens.RegistroScreen
 import com.example.turcoespanolkids.ui.screens.ResumenRegistroScreen
 import com.example.turcoespanolkids.ui.screens.ResumenScreen
 import com.example.turcoespanolkids.ui.theme.TurcoEspanolKidsTheme
 import com.example.turcoespanolkids.viewmodel.MainViewModel
 import com.example.turcoespanolkids.viewmodel.ProgresoViewModel
+import com.example.turcoespanolkids.viewmodel.UbicacionViewModel
 import com.example.turcoespanolkids.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
+
+private val permisosUbicacion = arrayOf(
+    Manifest.permission.ACCESS_FINE_LOCATION,
+    Manifest.permission.ACCESS_COARSE_LOCATION
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +54,28 @@ class MainActivity : ComponentActivity() {
                 val mainViewModel: MainViewModel = viewModel()
                 val usuarioViewModel: UsuarioViewModel = viewModel()
                 val progresoViewModel: ProgresoViewModel = viewModel()
+                val ubicacionViewModel: UbicacionViewModel = viewModel()
+                val contexto = LocalContext.current
+
+                val solicitarUbicacion = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
+                ) { resultado ->
+                    ubicacionViewModel.registrarResultado(resultado.values.any { it })
+                }
+
+                LaunchedEffect(Unit) {
+                    if (ubicacionViewModel.solicitudIniciada) return@LaunchedEffect
+                    val concedido = permisosUbicacion.any {
+                        ContextCompat.checkSelfPermission(contexto, it) ==
+                            PackageManager.PERMISSION_GRANTED
+                    }
+                    if (concedido) {
+                        ubicacionViewModel.registrarResultado(true)
+                    } else {
+                        ubicacionViewModel.iniciarSolicitud()
+                        solicitarUbicacion.launch(permisosUbicacion)
+                    }
+                }
 
                 LaunchedEffect(Unit) {
                     mainViewModel.navigationEvents.collectLatest { event ->
@@ -59,7 +94,17 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                NavHost(navController = navController, startDestination = Screen.Home.route) {
+                NavHost(navController = navController, startDestination = Screen.Practica.route) {
+                    composable(
+                        route = Screen.Practica.route,
+                        exitTransition = { fadeOut(tween(200)) }
+                    ) {
+                        PracticaScreen(
+                            mainViewModel = mainViewModel,
+                            progresoViewModel = progresoViewModel
+                        )
+                    }
+
                     composable(
                         route = Screen.Home.route,
                         exitTransition = { fadeOut(tween(200)) },

@@ -1,5 +1,7 @@
 package com.example.turcoespanolkids.model
 
+import kotlin.random.Random
+
 // Contenido ficticio de prueba: las unidades y su orden se ajustan según el especialista
 object BancoDeContenido {
 
@@ -39,21 +41,23 @@ object BancoDeContenido {
         )
     )
 
-    // Alterna el sentido (turco->español / español->turco); los distractores salen de la misma unidad
-    fun generarPreguntas(unidad: Unidad): List<Pregunta> {
-        return unidad.palabras.mapIndexed { index, palabra ->
-            val mostrarTurco = index % 2 == 0
+    // Todas las preguntas van en el idioma elegido; la misma semilla reproduce la misma lección
+    fun generarPreguntas(unidad: Unidad, idioma: IdiomaPractica, semilla: Long): List<Pregunta> {
+        val azar = Random(semilla)
+        val mostrarTurco = idioma == IdiomaPractica.TURCO
+
+        return unidad.palabras.map { palabra ->
             val correcta = if (mostrarTurco) palabra.es else palabra.tr
 
             val distractores = unidad.palabras
                 .filter { it != palabra }
                 .map { if (mostrarTurco) it.es else it.tr }
-                .shuffled()
+                .shuffled(azar)
                 .take(2)
 
             Pregunta(
                 palabra = palabra,
-                opciones = (distractores + correcta).shuffled(),
+                opciones = (distractores + correcta).shuffled(azar),
                 mostrarTurco = mostrarTurco
             )
         }

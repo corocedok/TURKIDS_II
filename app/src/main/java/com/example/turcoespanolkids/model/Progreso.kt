@@ -1,6 +1,5 @@
 package com.example.turcoespanolkids.model
 
-
 // Perfiles ficticios de prueba, sin datos personales reales
 data class PerfilPrueba(val id: String, val nombre: String)
 
@@ -13,7 +12,16 @@ object PerfilesPrueba {
 
 data class ProgresoUiState(
     val perfilActivoId: String = PerfilesPrueba.lista.first().id,
+    val idioma: IdiomaPractica = IdiomaPractica.TURCO,
     val estrellas: Map<String, Int> = emptyMap()
+)
+
+data class LeccionGuardada(
+    val unidadId: String,
+    val idioma: IdiomaPractica,
+    val semilla: Long,
+    val indice: Int,
+    val aciertos: Int
 )
 
 fun calcularEstrellas(aciertos: Int, total: Int): Int = when {
