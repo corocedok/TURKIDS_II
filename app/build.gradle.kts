@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.turcoespanolkids"
+    namespace = "com.example.turkids"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.turcoespanolkids"
+        applicationId = "com.example.turkids"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
