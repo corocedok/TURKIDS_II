@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-/** Centraliza los eventos de navegación, siguiendo el patrón de la Guía 10. */
 class MainViewModel : ViewModel() {
 
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()

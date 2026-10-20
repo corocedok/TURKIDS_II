@@ -23,18 +23,15 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.turcoespanolkids.model.calcularEstrellas
 import com.example.turcoespanolkids.navigation.Screen
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.random.Random
 
 @Composable
-fun ResumenScreen(aciertos: Int, total: Int, mainViewModel: MainViewModel) {    val estrellas = when {
-        total == 0 -> 0
-        aciertos == total -> 3
-        aciertos >= total / 2 -> 2
-        else -> 1
-    }
+fun ResumenScreen(aciertos: Int, total: Int, mainViewModel: MainViewModel) {
+    val estrellas = calcularEstrellas(aciertos, total)
 
     var contenidoVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { contenidoVisible = true }

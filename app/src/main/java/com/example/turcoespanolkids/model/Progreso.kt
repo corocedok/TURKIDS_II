@@ -1,7 +1,6 @@
 package com.example.turcoespanolkids.model
 
-
-/** Perfil ficticio de prueba. No contiene datos personales reales. */
+// Perfiles ficticios de prueba, sin datos personales reales
 data class PerfilPrueba(val id: String, val nombre: String)
 
 object PerfilesPrueba {
@@ -11,13 +10,20 @@ object PerfilesPrueba {
     )
 }
 
-/** Estado del avance: perfil activo y estrellas (0 a 3) por unidad. */
 data class ProgresoUiState(
     val perfilActivoId: String = PerfilesPrueba.lista.first().id,
+    val idioma: IdiomaPractica = IdiomaPractica.TURCO,
     val estrellas: Map<String, Int> = emptyMap()
 )
 
-/** Misma regla de estrellas que usa ResumenScreen. */
+data class LeccionGuardada(
+    val unidadId: String,
+    val idioma: IdiomaPractica,
+    val semilla: Long,
+    val indice: Int,
+    val aciertos: Int
+)
+
 fun calcularEstrellas(aciertos: Int, total: Int): Int = when {
     total == 0 -> 0
     aciertos == total -> 3

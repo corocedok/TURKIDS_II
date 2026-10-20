@@ -4,6 +4,8 @@ package com.example.turcoespanolkids.ui.screens
 
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -25,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.turcoespanolkids.model.LeccionUiState
 import com.example.turcoespanolkids.model.Pregunta
@@ -40,11 +44,6 @@ private val NaranjaSuave = Color(0xFFFFCC80)
 private val NaranjaTexto = Color(0xFFE65100)
 private val VerdeTexto = Color(0xFF2E7D32)
 
-/**
- * Devuelve una función que reproduce un texto con la voz del dispositivo.
- * El tercer parámetro indica si se deben mostrar avisos cuando falla
- * (true al tocar el botón, false en el audio automático).
- */
 @Composable
 private fun rememberHablar(): (String, Locale, Boolean) -> Unit {
     val context = LocalContext.current
@@ -60,6 +59,15 @@ private fun rememberHablar(): (String, Locale, Boolean) -> Unit {
             engine.stop()
             engine.shutdown()
         }
+    }
+
+    val ciclo = (LocalActivity.current as ComponentActivity).lifecycle
+    DisposableEffect(ciclo) {
+        val observador = LifecycleEventObserver { _, evento ->
+            if (evento == Lifecycle.Event.ON_STOP) tts.value?.stop()
+        }
+        ciclo.addObserver(observador)
+        onDispose { ciclo.removeObserver(observador) }
     }
 
     return { texto, idioma, avisar ->
@@ -87,7 +95,7 @@ private fun rememberHablar(): (String, Locale, Boolean) -> Unit {
     }
 }
 
-/** La palabra que se muestra en pantalla es la que se pronuncia. */
+// La palabra que se muestra en pantalla es la que se pronuncia
 private fun textoAudio(p: Pregunta): Pair<String, Locale> =
     if (p.mostrarTurco) p.palabra.tr to Locale.forLanguageTag("tr-TR")
     else p.palabra.es to Locale.forLanguageTag("es-US")
@@ -100,13 +108,15 @@ fun LeccionScreen(
     viewModel: LeccionViewModel = viewModel()
 ) {
     val estado by viewModel.estado.collectAsState()
+    val progreso by progresoViewModel.estado.collectAsState()
     val hablar = rememberHablar()
 
-    LaunchedEffect(unidadId) { viewModel.cargarUnidad(unidadId) }
+    LaunchedEffect(unidadId) {
+        viewModel.cargarUnidad(unidadId, progreso.idioma, progreso.perfilActivoId)
+    }
 
     LaunchedEffect(estado.finalizado) {
         if (estado.finalizado) {
-            // Guarda las estrellas en el perfil ficticio activo (solo en el dispositivo)
             progresoViewModel.registrarResultado(unidadId, estado.aciertos, estado.totalPreguntas)
             mainViewModel.navigateTo(
                 screen = Screen.Resumen(estado.aciertos, estado.totalPreguntas),
@@ -115,7 +125,6 @@ fun LeccionScreen(
         }
     }
 
-    // Reproducción automática al aparecer cada pregunta (sin avisos si falla)
     LaunchedEffect(estado.indiceActual, estado.preguntas) {
         val p = estado.preguntaActual ?: return@LaunchedEffect
         delay(800)

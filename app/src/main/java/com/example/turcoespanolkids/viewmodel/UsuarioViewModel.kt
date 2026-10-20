@@ -33,7 +33,6 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(aceptaTerminos = valor, errores = it.errores.copy(terminos = null)) }
     }
 
-    /** Valida todos los campos, actualiza los errores y retorna true si todo es válido. */
     fun validarFormulario(): Boolean {
         val actual = _estado.value
         val errores = UsuarioErrores(

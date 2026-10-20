@@ -1,6 +1,7 @@
 package com.example.turcoespanolkids.navigation
 
 sealed class Screen(val route: String) {
+    data object Practica : Screen(route = "practica")
     data object Home : Screen(route = "home")
     data object AcercaDe : Screen(route = "acerca_de")
     data object Registro : Screen(route = "registro")

@@ -15,7 +15,6 @@ import com.example.turcoespanolkids.navigation.Screen
 import com.example.turcoespanolkids.viewmodel.MainViewModel
 import com.example.turcoespanolkids.viewmodel.UsuarioViewModel
 
-/** Observa el MISMO UsuarioViewModel que RegistroScreen, sin pasar argumentos por la ruta. */
 @Composable
 fun ResumenRegistroScreen(
     mainViewModel: MainViewModel,

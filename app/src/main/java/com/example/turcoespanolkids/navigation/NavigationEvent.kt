@@ -1,6 +1,5 @@
 package com.example.turcoespanolkids.navigation
 
-/** Representa los distintos tipos de eventos de navegación. */
 sealed class NavigationEvent {
     data class NavigateTo(
         val route: Screen,
